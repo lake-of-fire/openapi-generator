@@ -155,8 +155,15 @@ extension KeyedEncodingContainerProtocol {
     }
 
     {{#nonPublicApi}}internal{{/nonPublicApi}}{{^nonPublicApi}}public{{/nonPublicApi}} mutating func encode(_ value: Decimal, forKey key: Self.Key) throws {
-        var mutableValue = value
-        let stringValue = NSDecimalString(&mutableValue, Locale(identifier: "en_US"))
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale(identifier: "en_US")
+        
+        // Convert the Decimal to a string using the formatter
+        guard let stringValue = formatter.string(for: value) else {
+            throw EncodingError.invalidValue(value, EncodingError.Context(codingPath: [key], debugDescription: "Unable to encode decimal value"))
+        }
+        
         try encode(stringValue, forKey: key)
     }
 
